@@ -5,9 +5,11 @@
 
 Computes the lyapunov exponents of `ds` for `nsteps` with a step size of `dt` seconds. 
 """
-function lyapunovs(ds::Dynamics, nsteps::Int=Int(3e4), ntr_steps::Int=Int(1e4), dt::Real=0.01)
+function lyapunovs(ds::Dynamics; nsteps::Int=Int(1e5), ntrsteps::Int=0, dt::Real=0.001)
     integ = initinteg(ds) 
-    t0 = ds.t           # Initial time 
+    ntrsteps == 0 || transientsteps!(integ, ntrsteps, dt)
+    t0 = integ.t        # Initial time 
+    @show t0 
     d = length(ds.x0)   # State space dimension 
     λ = zeros(d)        # Lyapunov exponents
     for k in 1 : nsteps 
@@ -19,7 +21,19 @@ function lyapunovs(ds::Dynamics, nsteps::Int=Int(3e4), ntr_steps::Int=Int(1e4), 
         λ .+= log.(abs.(diag(QR.R)))
         integ.u[:, 2 : end] .= QR.Q
     end 
-    λ ./ (integ.t - t0)
+    T = integ.t - t0 
+    @show T
+    λ ./ T
+end 
+
+# Takes transient steps to calculate the lyapunov exponents on the attractor.
+function transientsteps!(integ, ntrsteps, dt)
+    for k in 1 : ntrsteps
+        step!(integ, dt, true)     
+        Δ = integ.u[:, 2 : end] 
+        QR = qr(Δ) 
+        integ.u[:, 2 : end] .= QR.Q
+    end 
 end 
 
 # Initialized augmented integrator of augmented system. 
