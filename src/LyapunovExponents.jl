@@ -1,3 +1,6 @@
+"""
+    A module to calculate lyapunov exponents.
+"""
 module LyapunovExponents
 
 using DifferentialEquations 
@@ -6,7 +9,9 @@ using DocStringExtensions
 using ForwardDiff
 
 
-##### Exports 
+include("dynamics.jl") 
+include("lyapunovs.jl")
+
 export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs
 
 end # module 
