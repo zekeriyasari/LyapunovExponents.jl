@@ -12,6 +12,6 @@ using ForwardDiff
 include("dynamics.jl") 
 include("lyapunovs.jl")
 
-export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs
+export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs, dimension
 
 end # module 

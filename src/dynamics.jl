@@ -71,18 +71,19 @@ function (ds::Chen)(J::AbstractMatrix, x::AbstractVector, u, t)  # Jacobian
     ]
 end
 
+# Piecewise Chua diode 
 Base.@kwdef struct Diode 
     a::Float64 = -1.27 
     b::Float64 = -0.68
 end 
 
-function (diode::Diode)(x) 
+function (diode::Diode)(x)
     if x > 1 
-        -ds.b * x - ds.a + ds.b 
+        -diode.b * x - diode.a + diode.b 
     elseif abs(x) ≤ 1 
-        -ds.a * x 
+        -diode.a * x 
     else
-        -ds.b * x + ds.a - ds.b    
+        -diode.b * x + diode.a - diode.b    
     end  
 end 
 
@@ -100,7 +101,19 @@ function (ds::Chua)(dx::AbstractVector, x::AbstractVector, u, t)
     dx[3] = -ds.β * x[2] 
 end 
 
-# TODO: Define jabobian functions for Chua dynamics.
+# Note: To test the numerical calcuation of jacobian, Chua system will be used as the use-case. So, the method below is
+# commneted out.
+
+# function (ds::Chua)(J::AbstractMatrix, x::AbstractVector, u, t)  # Update Jacobian
+#     a, b = ds.diode.a, ds.diode.b 
+#     α, β = ds.α, ds.β
+#     J .= [ 
+#         α * (-1 - abs(x) > 1 ? b : a)   α   0; 
+#         1                               -1  1; 
+#         0                               -β  0 
+#     ]
+# end
+
 
 Base.@kwdef struct HRNeuron <: Dynamics 
     r::Float64 = 0.006 
@@ -123,3 +136,16 @@ function (ds::HRNeuron)(J::AbstractMatrix, x::AbstractVector, u, t)  # Jacobian
         ds.r * ds.s             0           -ds.r
     ]
 end
+
+# If the jacobian of `ds` is not defined, numeically calculate jacobian. 
+function (ds::Dynamics)(J::AbstractMatrix, x::AbstractVector, u, t)     # Update jacobian 
+    ForwardDiff.jacobian!(J, (dx, x) -> ds(dx, x, nothing, 0.), deepcopy(ds.x0), x)
+end 
+
+
+"""
+    $SIGNATURES 
+
+Returns the dimension of `ds` 
+"""
+dimension(ds::Dynamics) = length(ds.x0) 

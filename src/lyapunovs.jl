@@ -5,8 +5,7 @@
 
 Computes the lyapunov exponents of `ds` for `nsteps` with a step size of `dt` seconds. 
 """
-function lyapunovs(ds::Dynamics, nsteps::Int, dt::Real=0.01)
-    # TODO: Allow transient steps before calculating the lyapunov exponents 
+function lyapunovs(ds::Dynamics, nsteps::Int=Int(3e4), ntr_steps::Int=Int(1e4), dt::Real=0.01)
     integ = initinteg(ds) 
     t0 = ds.t           # Initial time 
     d = length(ds.x0)   # State space dimension 
