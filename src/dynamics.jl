@@ -2,8 +2,6 @@
 
 const SOLVER = Tsit5()
 
-##### Define dynamics 
-
 abstract type Dynamics end
 
 Base.@kwdef struct Lorenz <: Dynamics 
