@@ -22,12 +22,15 @@ function lyapunovs(ds::Dynamics, nsteps::Int=Int(3e4), ntr_steps::Int=Int(1e4), 
     λ ./ (integ.t - t0)
 end 
 
+# Initialized augmented integrator of augmented system. 
 function initinteg(ds::Dynamics) 
     d = size(ds.x0, 1)
     J0 = ds(zeros(d, d), ds.x0, nothing, ds.t)  # Initial jacobian matrix 
-    Δ0 = diagm(ones(d))  # Initial variation 
+    Δ0 = diagm(ones(d))                         # Initial variation in the tangent space 
     Φ0 = [ds.x0 Δ0]
-    tangentf = augment(ds, J0)  # Right hand side of tangent dynamics 
+    tangentf = augment(ds, J0)                  # Tangent space dynamics 
+    # Since a large number of steps may be required for the calculation of lyapunov exponents, the final time is adjusted to
+    # Inf here. 
     tspan = (ds.t, Inf)
     prob = ODEProblem(tangentf, Φ0, tspan, J0)
     init(prob, SOLVER)
