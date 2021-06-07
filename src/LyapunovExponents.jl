@@ -11,6 +11,7 @@ using ForwardDiff
 
 include("dynamics.jl") 
 include("lyapunovs.jl")
+include("msf.jl")
 
 export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs, dimension
 

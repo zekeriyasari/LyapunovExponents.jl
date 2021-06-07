@@ -9,7 +9,6 @@ function lyapunovs(ds::Dynamics; nsteps::Int=Int(1e5), ntrsteps::Int=0, dt::Real
     integ = initinteg(ds) 
     ntrsteps == 0 || transientsteps!(integ, ntrsteps, dt)
     t0 = integ.t        # Initial time 
-    @show t0 
     d = length(ds.x0)   # State space dimension 
     λ = zeros(d)        # Lyapunov exponents
     for k in 1 : nsteps 
@@ -22,7 +21,6 @@ function lyapunovs(ds::Dynamics; nsteps::Int=Int(1e5), ntrsteps::Int=0, dt::Real
         integ.u[:, 2 : end] .= QR.Q
     end 
     T = integ.t - t0 
-    @show T
     λ ./ T
 end 
 
@@ -36,21 +34,7 @@ function transientsteps!(integ, ntrsteps, dt)
     end 
 end 
 
-# Initialized augmented integrator of augmented system. 
-function initinteg(ds::Dynamics) 
-    d = size(ds.x0, 1)
-    J0 = ds(zeros(d, d), ds.x0, nothing, ds.t)  # Initial jacobian matrix 
-    Δ0 = diagm(ones(d))                         # Initial variation in the tangent space 
-    Φ0 = [ds.x0 Δ0]
-    tangentf = augment(ds, J0)                  # Tangent space dynamics 
-    # Since a large number of steps may be required for the calculation of lyapunov exponents, the final time is adjusted to
-    # Inf here. 
-    tspan = (ds.t, Inf)
-    prob = ODEProblem(tangentf, Φ0, tspan, J0)
-    init(prob, SOLVER)
-end 
-
-function augment(ds::Dynamics, J)
+function augment(ds::Dynamics, J::AbstractMatrix)
     #= 
         Returns augmented dynamics given as 
         ̇x = f(x) 
@@ -67,4 +51,18 @@ function augment(ds::Dynamics, J)
         ds(J, x, nothing, t)      # Update J 
         dΔ .= J * Δ               # Update dΔ
     end 
+end 
+
+# Initialized augmented integrator of augmented system. 
+function initinteg(ds::Dynamics) 
+    d = dimension(ds) 
+    J0 = ds(zeros(d, d), ds.x0, nothing, ds.t)  # Initial jacobian matrix 
+    Δ0 = diagm(ones(d))                         # Initial variation in the tangent space 
+    Φ0 = [ds.x0 Δ0]
+    tangentf = augment(ds, J0)                  # Tangent space dynamics 
+    # Since a large number of steps may be required for the calculation of lyapunov exponents, the final time is adjusted to
+    # Inf here. 
+    tspan = (ds.t, Inf)
+    prob = ODEProblem(tangentf, Φ0, tspan, J0)
+    init(prob, SOLVER)
 end 
