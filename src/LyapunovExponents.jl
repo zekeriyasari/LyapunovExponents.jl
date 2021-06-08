@@ -13,6 +13,6 @@ include("dynamics.jl")
 include("lyapunovs.jl")
 include("msf.jl")
 
-export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs, dimension
+export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs, dimension, msf
 
 end # module 

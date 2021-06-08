@@ -1,18 +1,18 @@
-# This file inludes the master stability function 
+# This file includes methods for master stability function 
 
-msf(ds::Dynamics, E::AbstractMatrix, P::AbstractMatrix) = map(λ -> _msf(ds, λ, P), eigvals(E))
-
-function _msf(ds::Dynamics, λ::Real, P::AbstractMatrix) 
-    d = dimension(ds) 
-    J0 = ds(zeros(d, d), ds.x0, nothing, ds.t) 
-end
-
-function augment(ds::Dynamics, J::AbstractMatrix, λ::Real, P::AbstractMatrix)
-    df = augment(ds, J) 
-    function f(dΦ, Φ, J, t) 
-        df(dΦ, Φ, J, t)
-        Δ = @view Φ[:, 2 : end] 
-        dΔ = @view dΦ[:, 2 : end]
-        dΔ .-=  λ * P * Δ  # This part comes from coupling part.
-    end 
+struct CoupledSystem{T1 <: Dynamics, T2<:Real, T3<:AbstractMatrix} <: Dynamics
+    ds::T1 
+    λ::T2 
+    P::T3
+    x0::Vector{Float64} 
+    t::Real
 end 
+CoupledSystem(ds::Dynamics, λ::Real, P::AbstractMatrix) = CoupledSystem(ds, λ, P, ds.x0, ds.t)
+
+function (cds::CoupledSystem)(dx, x, u, t)
+    cds.ds(dx, x, u, t) 
+    dx .-= λ * cds.P * dx
+end 
+
+
+msf(ds::Dynamics, λ::Real, P::AbstractMatrix) = CoupledSystem(ds, λ, P) |> lyapunovs
