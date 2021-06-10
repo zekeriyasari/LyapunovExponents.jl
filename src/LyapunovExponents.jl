@@ -3,6 +3,7 @@
 """
 module LyapunovExponents
 
+using ForwardDiff: _lyap_div!
 using LinearAlgebra: AbstractMatrix
 using DifferentialEquations 
 using LinearAlgebra 
@@ -11,7 +12,6 @@ using ForwardDiff
 
 include("dynamics.jl") 
 include("lyapunovs.jl")
-include("msf.jl")
 
 
 end # module 

@@ -1,69 +1,75 @@
-# This file include methods to calculate lyapunov exponents 
+# This file includes methods for master stability function.
 
-export lyapunovs
+export lyapunovs, msf
 
 """
     $SIGNATURES 
 
-Computes the lyapunov exponents of `ds` for `nsteps` with a step size of `dt` seconds. 
+Computes lyapunov exponents of `ds` 
 """
-function lyapunovs(ds::Dynamics; nsteps::Int=Int(1e5), ntrsteps::Int=0, dt::Real=0.001)
-    integ = initinteg(ds) 
-    ntrsteps == 0 || transientsteps!(integ, ntrsteps, dt)
-    t0 = integ.t        # Initial time 
-    d = length(ds.x0)   # State space dimension 
-    λ = zeros(d)        # Lyapunov exponents
-    for k in 1 : nsteps 
-        # While advacing the integrator, we perform QR decomposition to avoid numeical instabilities. 
+lyapunovs(ds::Dynamics; kwargs...) = _lyapunovs(tangentinteg(ds); kwargs...)
+
+"""
+    $SIGNATURES 
+
+Master stability function (msf). Returns maximum lyapunov exponent. 
+"""
+msf(ds::Dynamics, λ::Real, P::AbstractMatrix; kwargs...) = _lyapunovs(tangentinteg(ds, λ, P); kwargs...) |> maximum
+
+function tangentinteg(ds::Dynamics) 
+    function tf(dΦ, Φ, J, t) 
+        x  = @view Φ[:, 1] 
+        Δ  = @view Φ[:, 2 : end] 
+        dx = @view dΦ[:, 1] 
+        dΔ = @view dΦ[:, 2 : end] 
+        ds(dx, x, nothing, t) 
+        ds(J, x, nothing, t) 
+        dΔ .= J * Δ
+    end 
+    d = dimension(ds) 
+    J = zeros(d, d) 
+    ds(J, ds.x0, nothing, ds.t) 
+    prob = ODEProblem(tf, [ds.x0 diagm(ones(d))], (ds.t, Inf), J)
+    init(prob, Tsit5())
+end 
+
+function tangentinteg(ds::Dynamics, λ::Real, P::AbstractMatrix) 
+    function tf(dΦ, Φ, (J, λ, P), t) 
+        x  = @view Φ[:, 1] 
+        Δ  = @view Φ[:, 2 : end] 
+        dx = @view dΦ[:, 1] 
+        dΔ = @view dΦ[:, 2 : end] 
+        ds(dx, x, nothing, t) 
+        ds(J, x, nothing, t) 
+        dΔ .= (J - λ * P) * Δ
+    end 
+    d = dimension(ds) 
+    J = zeros(d, d) 
+    ds(J, ds.x0, nothing, ds.t) 
+    prob = ODEProblem(tf, [ds.x0 diagm(ones(d))], (ds.t, Inf), (J, λ, P))
+    init(prob, Tsit5())
+end 
+
+function _lyapunovs(integ; nsteps::Int=Int(3e4), ntrsteps::Int=0, dt::Real=0.01)
+    # Take transient steps 
+    for i in 1 : ntrsteps
         step!(integ, dt, true) 
         Δ = integ.u[:, 2 : end] 
         QR = qr(Δ) 
-        λ .+= log.(abs.(diag(QR.R)))
         integ.u[:, 2 : end] .= QR.Q
     end 
-    T = integ.t - t0 
-    λ ./ T
-end 
 
-# Takes transient steps to calculate the lyapunov exponents on the attractor.
-function transientsteps!(integ, ntrsteps, dt)
-    for k in 1 : ntrsteps
-        step!(integ, dt, true)     
+    # Calculate lyapunov exponents 
+    d = size(integ.u, 1)
+    t0 = integ.t
+    Λ = zeros(d) 
+    for i in 1 : nsteps 
+        step!(integ, dt, true) 
         Δ = integ.u[:, 2 : end] 
         QR = qr(Δ) 
+        Λ .+= log.(abs.(diag(QR.R)))
         integ.u[:, 2 : end] .= QR.Q
     end 
-end 
+    Λ ./ (integ.t - t0)
+end
 
-function augment(ds::Dynamics, J::AbstractMatrix)
-    #= 
-        Returns augmented dynamics given as 
-        ̇x = f(x) 
-        ̇Δ = Df(s)⋅Δ
-        where Δ is the variation in the tangent space. 
-        We collect the variables x and Δ with the following notation Φ = [x | Δ]
-    =#
-    function f(dΦ, Φ, J, t) 
-        x  = @view Φ[:, 1] 
-        dx = @view dΦ[:, 1] 
-        Δ  = @view Φ[:, 2 : end] 
-        dΔ = @view dΦ[:, 2 : end]
-        ds(dx, x, nothing, t)     # Update ds 
-        ds(J, x, nothing, t)      # Update J 
-        dΔ .= J * Δ               # Update dΔ
-    end 
-end 
-
-# Initialized augmented integrator of augmented system. 
-function initinteg(ds::Dynamics) 
-    d = dimension(ds) 
-    J0 = ds(zeros(d, d), ds.x0, nothing, ds.t)  # Initial jacobian matrix 
-    Δ0 = diagm(ones(d))                         # Initial variation in the tangent space 
-    Φ0 = [ds.x0 Δ0]
-    tangentf = augment(ds, J0)                  # Tangent space dynamics 
-    # Since a large number of steps may be required for the calculation of lyapunov exponents, the final time is adjusted to
-    # Inf here. 
-    tspan = (ds.t, Inf)
-    prob = ODEProblem(tangentf, Φ0, tspan, J0)
-    init(prob, SOLVER)
-end 
