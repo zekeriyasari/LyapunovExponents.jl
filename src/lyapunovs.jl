@@ -5,14 +5,28 @@ export lyapunovs, msf
 """
     $SIGNATURES 
 
-Computes lyapunov exponents of `ds` 
+Computes lyapunov exponents of `ds`.kwargs may include 
+
+* nsteps::Int = 3e4 
+    Number of steps to calculate lypaunov exponents 
+* ntrsteps::Int = 0
+    Number of transient steps for transient steps. Transient steps are taken before calculation of lypaunov exponents 
+* dt::Real = 0.01
+    Step size of integrator. 
 """
 lyapunovs(ds::Dynamics; kwargs...) = _lyapunovs(tangentinteg(ds); kwargs...)
 
 """
     $SIGNATURES 
 
-Master stability function (msf). Returns maximum lyapunov exponent. 
+Master stability function (msf). Returns maximum lyapunov exponent. kwargs may include 
+
+* nsteps::Int = 3e4 
+    Number of steps to calculate lypaunov exponents 
+* ntrsteps::Int = 0
+    Number of transient steps for transient steps. Transient steps are taken before calculation of lypaunov exponents 
+* dt::Real = 0.01
+    Step size of integrator. 
 """
 msf(ds::Dynamics, λ::Real, P::AbstractMatrix; kwargs...) = _lyapunovs(tangentinteg(ds, λ, P); kwargs...) |> maximum
 
@@ -21,10 +35,10 @@ function tangentinteg(ds::Dynamics)
         x  = @view Φ[:, 1] 
         Δ  = @view Φ[:, 2 : end] 
         dx = @view dΦ[:, 1] 
-        dΔ = @view dΦ[:, 2 : end] 
-        ds(dx, x, nothing, t) 
-        ds(J, x, nothing, t) 
-        dΔ .= J * Δ
+        dΔ = @view dΦ[:, 2 : end]   
+        ds(dx, x, nothing, t)   # Update dx 
+        ds(J, x, nothing, t)    # Update J 
+        dΔ .= J * Δ             # Update dΔ
     end 
     d = dimension(ds) 
     J = zeros(d, d) 
@@ -38,10 +52,10 @@ function tangentinteg(ds::Dynamics, λ::Real, P::AbstractMatrix)
         x  = @view Φ[:, 1] 
         Δ  = @view Φ[:, 2 : end] 
         dx = @view dΦ[:, 1] 
-        dΔ = @view dΦ[:, 2 : end] 
-        ds(dx, x, nothing, t) 
-        ds(J, x, nothing, t) 
-        dΔ .= (J - λ * P) * Δ
+        dΔ = @view dΦ[:, 2 : end]   # Variations in the tangent space 
+        ds(dx, x, nothing, t)   # Update dx 
+        ds(J, x, nothing, t)    # Update J 
+        dΔ .= (J - λ * P) * Δ   # Update dΔ
     end 
     d = dimension(ds) 
     J = zeros(d, d) 
