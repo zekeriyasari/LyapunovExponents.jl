@@ -60,9 +60,8 @@ function _lyapunovs(integ; nsteps::Int=Int(3e4), ntrsteps::Int=0, dt::Real=0.01)
     end 
 
     # Calculate lyapunov exponents 
-    d = size(integ.u, 1)
     t0 = integ.t
-    Λ = zeros(d) 
+    Λ = zeros(size(integ.u, 1)) 
     for i in 1 : nsteps 
         step!(integ, dt, true) 
         Δ = integ.u[:, 2 : end] 
