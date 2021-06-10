@@ -18,7 +18,6 @@ function lyapunovs(ds::Dynamics; nsteps::Int=Int(1e5), ntrsteps::Int=0, dt::Real
         step!(integ, dt, true) 
         Δ = integ.u[:, 2 : end] 
         QR = qr(Δ) 
-        integ.u[:, 2 : end] .= QR.Q 
         λ .+= log.(abs.(diag(QR.R)))
         integ.u[:, 2 : end] .= QR.Q
     end 
