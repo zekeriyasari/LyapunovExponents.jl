@@ -1,5 +1,7 @@
 # This file includes some well-known dynamics 
 
+export Lorenz, Chua, Chen, Rossler, HRNeuron, dimension
+
 const SOLVER = Tsit5()
 
 abstract type Dynamics end

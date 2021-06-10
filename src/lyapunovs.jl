@@ -1,5 +1,7 @@
 # This file include methods to calculate lyapunov exponents 
 
+export lyapunovs
+
 """
     $SIGNATURES 
 

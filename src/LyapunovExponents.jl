@@ -3,16 +3,15 @@
 """
 module LyapunovExponents
 
+using LinearAlgebra: AbstractMatrix
 using DifferentialEquations 
 using LinearAlgebra 
 using DocStringExtensions 
 using ForwardDiff
 
-
 include("dynamics.jl") 
 include("lyapunovs.jl")
 include("msf.jl")
 
-export Lorenz, Chua, Chen, Rossler, HRNeuron, lyapunovs, dimension, msf
 
 end # module 

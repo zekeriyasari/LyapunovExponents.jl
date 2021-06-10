@@ -1,3 +1,5 @@
+# This file includes an example of calculation of jacobians numerically. 
+
 using ForwardDiff 
 using LyapunovExponents 
 
