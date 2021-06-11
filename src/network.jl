@@ -1,6 +1,6 @@
 # This file includes dynamical networks
 
-export Network, solvenet, isstable, eigenmodes
+export Network, solvenet, isstable, eigenmodes, unstablemodes, stablemodes
 
 struct Network{T1<:Dynamics, T2<:AbstractMatrix, T3<:AbstractMatrix}
     nodes::Vector{T1}
@@ -21,15 +21,18 @@ function solvenet(net::Network, tspan::Tuple, alg=Tsit5())
     solve(prob, SOLVER)
 end
 
-# FIXME:The number of eigenmodes does not mathc the number of eigenvalues.  
 function eigenmodes(net::Network) 
-    λ = sort!(eigvals(-net.E))
-    @show λ
-    d = Dict{eltype(λ), Float64}()
-    for (k, λi) in enumerate(λ)
-        d[λi] = msf(net.nodes[k], λi, net.P)
-    end 
-    d
+    map(enumerate(eigvals(-net.E))) do (k, λi)
+        λi => msf(net.nodes[k], λi, net.P)
+    end
 end 
 
-isstable(net::Network) = all(value(eigenmodes) .≤ 0)
+function isstable(net::Network) 
+    modepairs = eigenmodes(net) 
+    _ = popfirst!(modepairs)
+    all(getfield.(modepairs, :second) .< 0)
+end 
+
+unstablemodes(net::Network) = filter(modepair -> modepair.second > 0, eigenmodes(net))
+
+stablemodes(net::Network) = filter(modepair -> modepair.second < 0, eigenmodes(net))
