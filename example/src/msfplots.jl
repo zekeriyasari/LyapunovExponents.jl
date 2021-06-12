@@ -5,29 +5,29 @@
 # ### Network 
 # Consider the network given as 
 # $$ 
-# \dot{x}_i = f(x_i) - ϵ \sum_{j = 1}^n ξ_{ij} P x_j \quad i = 1, 2, \ldots, n 
+# \dot{x}_i = f(x_i) - \epsilon \sum_{j = 1}^n \xi_{ij} P x_j \quad i = 1, 2, \ldots, n 
 # $$ 
 # where 
-# * $ x_i ∈ \mathbb{R}^d $ 
+# * $ x_i \in \mathbb{R}^d $ 
 # * $ f : \mathbb{R}^d \mapsto \mathbb{R}^d $ 
 # * $ Ξ = [\xi_{ij}] $ 
-# * $ 0 = λ_1 < λ_2 ≤ λ_3 ≤ … ≤ λ_n $ are the eigenvalues of $Ξ$. 
+# * $ 0 = \lambda_1 < \lambda_2 \leq \lambda_3 \leq \ldots \leq \lambda_n $ are the eigenvalues of $\Xi$. 
 
 # ### Full Synchronization 
 # The system achieves full synchronzation if 
 # $$ 
-# \lim_{t \mapsto \infty} |x_i(t) - x_j(t)| \quad ∀ i 
+# \lim_{t \mapsto \infty} |x_i(t) - x_j(t)| \quad \forall i 
 # $$ 
 
 # ### Master Stability Function 
 # The full synchronization of the network given above can be associated with 
 # $$ 
-# \dot{ζ} = (Df(s) - ϵ λ_k P) ζ \quad k = 1, 2, \ldots, n 
+# \dot{\zeta} = (Df(s) - \epsilon \lambda_k P) \zeta \quad k = 1, 2, \ldots, n 
 # $$  
 # where $s$ is the special solution of the node dynamics $\dot{s} = f(s)$, $Df(s)$ is the jacobian of $f$ calculated at
 # $s$. For the system to achieve full synchronization, maximum lyapunov exponents calculated usign the auxilary system
-# must be negative. Let $η = ϵ λ$. Then, the master stability fucntion $Λ = Ψ(η)$ where $Λ$ is the maximum lyapunnov
-# expoent corresponding to $η$. In the following, we plot MSF. 
+# must be negative. Let $\eta = \epsilon \lambda$. Then, the master stability fucntion $\Lambda = \Psi(\eta)$ where $\Lambda$ is the maximum lyapunnov
+# expoent corresponding to $\eta$. In the following, we plot MSF. 
 #-
 # Load packages
 using LyapunovExponents 
@@ -54,5 +54,9 @@ dt = 0.001              # Step size of the integration
 Λ = Ψ.(η)
 
 # Plots 
+theme(:default) 
 plot(η, Λ, marker=(:circle, 3))
 hline!([0], linestyle=:dash)
+
+# #### References 
+# * Huang, L., Chen, Q., Lai, Y. C., & Pecora, L. M. (2009). Generic behavior of master-stability functions in coupled nonlinear dynamical systems. Physical Review E, 80(3), 036204.
