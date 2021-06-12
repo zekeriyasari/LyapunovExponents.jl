@@ -18,6 +18,7 @@ struct Network{T1<:Dynamics, T2<:AbstractMatrix, T3<:AbstractMatrix}
     "Inner coupling matrix"
     P::T3 
 end 
+
 Network(::Type{T}, E::AbstractMatrix, P::AbstractMatrix) where {T<:Dynamics} = Network([T() for i in 1 : size(E, 1)], E, P)
 
 function (net::Network)(dx, x, u, t) 
