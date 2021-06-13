@@ -3,8 +3,6 @@
 """
 module LyapunovExponents
 
-using Base: entry_point_and_project_file
-using LinearAlgebra: AbstractMatrix
 using DifferentialEquations 
 using LinearAlgebra 
 using DocStringExtensions 
