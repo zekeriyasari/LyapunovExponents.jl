@@ -1,34 +1,40 @@
-# # Updating Network Topology 
-# In this notebook, we will consider mutating the network topology. For this purpose, let us construct a simple network
-# and modify its topology step by step. 
+# In this file network simulation with changing network topology is performed. 
 
-# Load pacakges 
 using LyapunovExponents 
-using LightGraphs 
-using GraphPlot 
+using DifferentialEquations
+using LightGraphs, GraphPlot 
+using Plots; theme(:default) 
 
-# Let us define a helper fucntion to plot the network topology. 
+# Some helper functions 
 plotgraph(graph::AbstractGraph) = gplot(graph, nodelabel=1:nv(graph), layout=circular_layout)
-plotgraph(net::Network) = plotgraph(SimpleGraph(net.E))
+plotgraph(net::Network) = net.E |> SimpleGraph |> plotgraph 
 
-# Construct a cyclic graph. 
-n = 5   # Number of nodes 
-graph = cycle_graph(n) 
-plotgraph(graph)
+# Construct a graph
+n = 2       # Number of nodes 
+ϵ = 20.     # Coupling strengths 
+graph = cycle_graph(n)
+Ξ = collect(laplacian_matrix(graph))
+P = diagm([1, 0, 0])
+net = Network(Lorenz, -ϵ * Ξ, P)
+plotgraph(net) 
 
-# Construct a network from the graph. 
-E = collect(laplacian_matrix(graph))
-net = Network(Lorenz, E, diagm(ones(3))) 
-plotgraph(net)
+# Construct a callback 
+actiontimes = [25., 50.] 
+condition_delete(x, t, integ) = t ∈ actiontimes[1]  
+condition_add(x, t, integ) = t ∈ actiontimes[2]  
+action_delete!(integ) = deletelink!(integ.sol.prob.f.f, 1, 2) 
+action_add!(integ) = addlink!(integ.sol.prob.f.f, 1, 2, ϵ) 
+cb = CallbackSet(
+    DiscreteCallback(condition_delete, action_delete!),
+    DiscreteCallback(condition_add, action_add!)
+) 
 
-# Add and edge between the nodes 1 and 3 
-updatelink!(net, 1, 3) 
-plotgraph(net)
+# Solve the network 
+sol = solvenet(net, (0., 100.), callback=cb, tstops=actiontimes)
+t, x = sol.t, sol.u 
 
-# Add and edge between the nodes 2 and 3 
-updatelink!(net, 2, 5) 
-plotgraph(net)
-
-# Delete a connection between the nodes 2 and 3 
-updatelink!(net, 2, 3, 0.)
-plotgraph(net)
+# Plot the results 
+d = dimension(net.nodes[1]) 
+getwave(x, i) = getindex.(x, (i - 1) * d + 1)
+plot(t, abs.(getwave(x, 1) - getwave(x, 2)), label="e12")
+vline!(actiontimes, linestyle=:dash, linewidth=2, labels=["t", "s"])
