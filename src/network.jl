@@ -149,7 +149,7 @@ end
 
 Returns true if there exists a link between the nodes `i` and `j`.
 """
-haslink(net::E, i::Int, j::Int) 
+haslink(net::Network, i::Int, j::Int) = iszero(net.E[i, j])
 
 """
     $SIGNATURES 
