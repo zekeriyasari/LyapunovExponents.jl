@@ -197,7 +197,7 @@ the coupling strength $ \epsilon $ should be larger than $ \epsilon_1 = \eta^\st
 to avoid full syncronization, we should also keep the coupling strength $ \epsilon $ smaller than $ \epsilon_2 =
 \eta^\star / \lambda_2^{syn} $. Hence, the region for $ \epsilon $ is $ [\epsilon_1, \epsilon_2]$. For example, if we
 choose the coupling strength between the nodes 2 and 5 as $ w_i = 1.5 $, we can find the interval for $ \epsilon =
- [\epsilon_1, \epsilon_2] = [0.35, 10.82] $
+ [\epsilon_1, \epsilon_2] = [9.35, 10.82] $
 
 ```@example weightsweep
 W = collect(laplacian_matrix(graph)) .|> float
@@ -213,8 +213,8 @@ D = G[3 : 5, 3 : 5]
 λD = eigvals(D)
 λ1tr = λB[1]
 λ2syn = λD[2]
-ϵ1 = threshold / λ1tr
-ϵ2 = threshold / λ2syn
+ϵ1 = threshold / λ1tr |> display
+ϵ2 = threshold / λ2syn |> display
 ```
 
 Let us simulate the system in the nodes by for $ \epsilon = 9.6 $.

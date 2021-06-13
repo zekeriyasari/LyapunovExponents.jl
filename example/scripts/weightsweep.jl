@@ -106,8 +106,8 @@ D = G[3 : 5, 3 : 5]
 λD = eigvals(D)
 λ1tr = λB[1]
 λ2syn = λD[2]
-ϵ1 = threshold / λ1tr
-ϵ2 = threshold / λ2syn
+ϵ1 = threshold / λ1tr |> display
+ϵ2 = threshold / λ2syn |> display
 
 ϵ = 9.6
 nodes = [Lorenz(σ = 10, β = 8 / 3, ρ=35) for i in 1 : n]
