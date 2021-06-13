@@ -10,12 +10,17 @@ plotgraph(graph::AbstractGraph) = gplot(graph, nodelabel=1:nv(graph), layout=cir
 plotgraph(net::Network) = net.E |> SimpleGraph |> plotgraph 
 
 # Construct a graph
-n = 2       # Number of nodes 
-ϵ = 20.     # Coupling strengths 
+n = 5           # Number of nodes 
+ϵ = 10.8     # Coupling strengths 
 graph = cycle_graph(n)
+add_edge!(graph, 1, 3) 
+add_edge!(graph, 1, 4) 
+add_edge!(graph, 2, 5) 
 Ξ = collect(laplacian_matrix(graph))
 P = diagm([1, 0, 0])
 net = Network(Lorenz, -ϵ * Ξ, P)
+plotgraph(net)
+scale_connection_matrix!(net)
 plotgraph(net) 
 
 # Construct a callback 
