@@ -86,3 +86,4 @@ function _lyapunovs(integ; nsteps::Int=Int(3e4), ntrsteps::Int=0, dt::Real=0.01)
     Λ ./ (integ.t - t0)
 end
 
+
