@@ -50,7 +50,7 @@ p_2, \\ldots, p_n)``
     ```
 """
 function msf(ds::Dynamics, η::Real, P::AbstractMatrix; kwargs...)
-    η ≤ 0 || error("Expected nonpositive eigenvalue η, got $η instead.")
+    η ≥ 0 || error("Expected nonnegative eigenvalue η, got $η instead.")
     _lyapunovs(tangentinteg(ds, η, P); kwargs...) |> maximum
 end 
 
@@ -79,7 +79,7 @@ function tangentinteg(ds::Dynamics, η::Real, P::AbstractMatrix)
         dΔ = @view dΦ[:, 2 : end]   # Variations in the tangent space 
         ds(dx, x, nothing, t)   # Update dx 
         ds(J, x, nothing, t)    # Update J 
-        dΔ .= (J + η * P) * Δ   # Update dΔ
+        dΔ .= (J - η * P) * Δ   # Update dΔ
     end 
     d = dimension(ds) 
     J = zeros(d, d) 
