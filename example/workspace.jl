@@ -50,6 +50,7 @@ plotgraph(graph) |> display
 W = collect(laplacian_matrix(graph)) .|> float
 Ξ = scale(W)
 
+
 # Choose a symmetry 
 Q = [
     0 0 0 1 0 0; 
