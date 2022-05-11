@@ -1,6 +1,6 @@
+authors = ["Zekeriya Sarı"]
 name = "LyapunovExponents"
 uuid = "5cba8fe7-35d7-420e-b2ac-8d7b9ca4506a"
-authors = ["Zekeriya Sarı"]
 version = "0.1.0"
 
 [deps]
@@ -10,9 +10,9 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [compat]
-DifferentialEquations = "6"
-ForwardDiff = "0.10"
+DifferentialEquations = "7"
 DocStringExtensions = "0.8"
+ForwardDiff = "0.10"
 julia = "1.6"
 
 [extras]
